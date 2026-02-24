@@ -10,7 +10,7 @@ import com.esi.ms_ordonnance.DTOs.RemboursementDTO;
 /**
  * Remboursement
  */
-@FeignClient(name = "ms-remboursement", url = "http://localhost:8083")
+@FeignClient(name = "ms-remboursement")
 public interface Remboursement {
 
     @GetMapping("/remboursements/search/findRemboursementByIdOrdonnance?idOrdonnance={id}")

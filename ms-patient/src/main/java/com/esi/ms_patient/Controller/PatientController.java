@@ -3,12 +3,14 @@ package com.esi.ms_patient.Controller;
 
 import java.util.List;
 
+import org.apache.hc.core5.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.graphql.client.HttpGraphQlClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.esi.ms_patient.DTOs.OrdonnanceDTO;
 import com.esi.ms_patient.Entities.Patient;
@@ -50,7 +52,35 @@ public class PatientController {
             patient.setOrdonnances(ordos);
         }
         return pat;
+    }
 
+    @GetMapping("patient/{idp}")
+    public Patient getPatientWithOrdonannce(@PathVariable("idp") Long idPatient) {
+
+        Patient patient = patientRepository.findById(idPatient)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Patient not found"));
+
+        String queryOrdonnance = " {  getOrdonnanceByIdPatient(idPatient: " + idPatient + ")  " +
+                " { idOrdonnance      medicaments {  nom  cout }} }";
+
+        List<OrdonnanceDTO> ordonnances = ordonnenceClient.document(queryOrdonnance)
+                .retrieve("getOrdonnanceByIdPatient")
+                .toEntityList(OrdonnanceDTO.class)
+                .block();
+
+        ordonnances.forEach(o -> {
+            String queryRemboursement = "{  getRemboursementByIdOrdonnance (idOrdonnance:" + o.getIdOrdonnance() + ")" +
+                    "{ montant dateRemboursement}}";
+
+            RemboursementDTO remboursementDTO = remboursementClient.document(queryRemboursement)
+                    .retrieve("getRemboursementByIdOrdonnance")
+                    .toEntity(RemboursementDTO.class)
+                    .block();
+
+            o.setRemboursementDTO(remboursementDTO);
+        });
+        patient.setOrdonnances(ordonnances);
+        return patient;
     }
 
 }

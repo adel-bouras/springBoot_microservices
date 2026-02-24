@@ -1,16 +1,15 @@
-FROM eclipse-temurin:21-jdk AS build
+FROM eclipse-temurin:25-jdk AS build
 
 WORKDIR /app
 
 COPY . .
 
-RUN ./mvnw clean compile
-
 RUN ./mvnw clean package -DskipTests
-
 
 FROM eclipse-temurin:21-jre AS deploy
 
-COPY --from=build /app/target/ms-remboursement.jar .
+WORKDIR /app
 
-CMD = ["java","-jar","ms-remboursement.jar"]
+COPY --from=build /app/target/classes/com/esi/ms-remboursement.jar .
+
+CMD ["java","-jar","ms-remboursement.jar"]

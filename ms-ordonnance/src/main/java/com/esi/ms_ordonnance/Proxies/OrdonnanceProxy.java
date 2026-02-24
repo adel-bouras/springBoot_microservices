@@ -9,7 +9,8 @@ import com.esi.ms_ordonnance.DTOs.PatientDTO;
 /**
  * OrdonnanceProxy
  */
-@FeignClient(name = "ms-patient", url = "http://localhost:8081")
+// @FeignClient(name = "ms-patient", url = "http://localhost:8081")
+@FeignClient(name = "ms-patient")
 public interface OrdonnanceProxy {
     @GetMapping("/patients/{id}")
     public PatientDTO getPatientById(@PathVariable(name = "id") Long id);
